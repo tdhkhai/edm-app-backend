@@ -4,10 +4,10 @@ let express = require('express'),
    cors = require('cors'),
    bodyParser = require('body-parser'),
    dbConfig = require('./database/db');
-createError = require('http-errors');
+   createError = require('http-errors');
 // Connecting with mongo db
 mongoose.Promise = global.Promise;
-mongoose.connect(dbConfig.db, {
+mongoose.connect(dbConfig.db_real, {
    useNewUrlParser: true,
    useFindAndModify: false,
 }).then(() => {
@@ -42,8 +42,8 @@ app.use(function (req, res, next) {
    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization");
    next();
 });
-app.use(express.static(path.join(__dirname, 'dist/JIRA-v2')));
-app.use('/', express.static(path.join(__dirname, 'dist/JIRA-v2')));
+app.use(express.static(path.join(__dirname, 'dist/JIRA')));
+app.use('/', express.static(path.join(__dirname, 'dist/JIRA')));
 // Set up URL
 app.use('/api/units/', unitRoute)
 app.use('/api/users/', userRoute)
