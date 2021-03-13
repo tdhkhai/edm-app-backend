@@ -147,7 +147,7 @@ domainRoute.route('/count-customers').get((req, res, next) => {
         "countAll": {
           "$sum": 1
         },
-        "countActived": {
+        "countNew": {
           "$sum": { "$cond": [{ $eq: ["$status", "1"] }, 1, 0] }
         },
         "countExtend": {
@@ -176,22 +176,107 @@ domainRoute.route('/count-customers').get((req, res, next) => {
   })
 })
 
-// List Customer by Status
-domainRoute.route('/list-cus-by-status').post((req, res, next) => {
+// List by Status
+domainRoute.route('/list-by-status').post((req, res, next) => {
   Domain.aggregate([
     {
       "$addFields": {
-        "year": { "$dateToString": { "date": "$expirationDate", "format": "%Y" } },
-        "daysRemainExpired": { $round: [{ $divide: [{ $subtract: ["$$NOW", "$expirationDate"] }, 1000 * 60 * 60 * 24] }] }
-      }
+        "year": {
+          "$switch": {
+            "branches": [
+              {
+                "case": { "$eq": ["$status", "1"] },
+                "then": { "$dateToString": { "date": "$registrationDate", "format": "%Y" } },
+              }, {
+                "case": { "$eq": ["$status", "2"] },
+                "then": { "$dateToString": { "date": { $last: "$extend.fromDate" }, "format": "%Y" } },
+              }
+            ],
+            "default": "none"
+          }
+        },
+        "dateExpired": {
+          "$switch": {
+            "branches": [
+              {
+                "case": { "$eq": ["$status", "1"] },
+                "then": "$expirationDate"
+              }, {
+                "case": { "$eq": ["$status", "2"] },
+                "then": { $last: "$extend.toDate" }
+              }
+            ],
+            "default": "none"
+          }
+        }
+      },
     },
     {
       "$match": {
         "status": req.body.status,
         "year": req.body.year,
-        "daysRemainExpired": { $lte: 30}
       }
     },
+  ], (error, data) => {
+    if (error) {
+      return next(error);
+    } else {
+      res.status(200).json(data)
+    }
+  })
+})
+
+// List Expired
+domainRoute.route('/list-expired').get((req, res, next) => {
+  Domain.aggregate([
+    {
+      "$addFields": {
+        "dayExpired": {
+          "$switch": {
+            "branches": [
+              {
+                "case": { "$eq": ["$status", "1"] },
+                "then": { "$dateToString": { "date": "$registrationDate" } },
+              }, {
+                "case": { "$eq": ["$status", "2"] },
+                "then": { "$dateToString": { "date": { $last: "$extend.toDate" } } },
+              }
+            ],
+            "default": "none"
+          }
+        },
+        "daysRemainExpired": {
+          "$switch": {
+            "branches": [
+              {
+                "case": { "$eq": ["$status", "1"] },
+                "then": { $round: [{ $divide: [{ $subtract: ["$$NOW", "$expirationDate"] }, 1000 * 60 * 60 * 24] }] }
+              }, {
+                "case": { "$eq": ["$status", "2"] },
+                "then": { $round: [{ $divide: [{ $subtract: ["$$NOW", { $last: "$extend.toDate" }] }, 1000 * 60 * 60 * 24] }] }
+              }
+            ],
+            "default": "none"
+          }
+        }
+      },
+    },
+    {
+      "$match": {
+        "daysRemainExpired": { "$gte": -30 }
+      }
+    },
+    {
+      "$project": {
+        "am": 1,
+        "comTaxCode": 1,
+        "comName": 1,
+        "status": 1,
+        "daysRemainExpired": 1,
+        "dayExpired": 1,
+        "domain": 1
+      }
+    }
   ], (error, data) => {
     if (error) {
 

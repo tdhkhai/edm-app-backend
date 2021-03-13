@@ -86,7 +86,7 @@ webhostingRoute.route('/pushextendwebhosting/:id').put((req, res, next) => {
 webhostingRoute.route('/pullextendwebhosting/:id').put((req, res, next) => {
   Webhosting.findByIdAndUpdate(
     req.params.id, {
-    $pull: { "extend": { _id : req.body._id } },
+    $pull: { "extend": { _id: req.body._id } },
 
   }, (error, data) => {
     if (error) {
@@ -140,7 +140,7 @@ webhostingRoute.route('/count-customers').get((req, res, next) => {
         "countAll": {
           "$sum": 1
         },
-        "countActived": {
+        "countNew": {
           "$sum": { "$cond": [{ $eq: ["$status", "1"] }, 1, 0] }
         },
         "countExtend": {
@@ -155,18 +155,129 @@ webhostingRoute.route('/count-customers').get((req, res, next) => {
       },
     },
     {
-      "$sort" : {
-        "_id.year" : -1
+      "$sort": {
+        "_id.year": -1
       }
     }
   ], (error, data) => {
     if (error) {
-      
+
       return next(error);
     } else {
       res.status(200).json(data)
     }
   })
 })
+
+// List by Status
+webhostingRoute.route('/list-by-status').post((req, res, next) => {
+  Webhosting.aggregate([
+    {
+      "$addFields": {
+        "year": {
+          "$switch": {
+            "branches": [
+              {
+                "case": { "$eq": ["$status", "1"] },
+                "then": { "$dateToString": { "date": "$registrationDate", "format": "%Y" } },
+              }, {
+                "case": { "$eq": ["$status", "2"] },
+                "then": { "$dateToString": { "date": { $last: "$extend.fromDate" }, "format": "%Y" } },
+              }
+            ],
+            "default": "none"
+          }
+        },
+        "dateExpired": {
+          "$switch": {
+            "branches": [
+              {
+                "case": { "$eq": ["$status", "1"] },
+                "then": "$expirationDate"
+              }, {
+                "case": { "$eq": ["$status", "2"] },
+                "then": { $last: "$extend.toDate" }
+              }
+            ],
+            "default": "none"
+          }
+        }
+      },
+    },
+    {
+      "$match": {
+        "status": req.body.status,
+        "year": req.body.year,
+      }
+    },
+  ], (error, data) => {
+    if (error) {
+      return next(error);
+    } else {
+      res.status(200).json(data)
+    }
+  })
+})
+
+// List Expired
+webhostingRoute.route('/list-expired').get((req, res, next) => {
+  Webhosting.aggregate([
+    {
+      "$addFields": {
+        "dayExpired": {
+          "$switch": {
+            "branches": [
+              {
+                "case": { "$eq": ["$status", "1"] },
+                "then": { "$dateToString": { "date": "$registrationDate" } },
+              }, {
+                "case": { "$eq": ["$status", "2"] },
+                "then": { "$dateToString": { "date": { $last: "$extend.toDate" } } },
+              }
+            ],
+            "default": "none"
+          }
+        },
+        "daysRemainExpired": {
+          "$switch": {
+            "branches": [
+              {
+                "case": { "$eq": ["$status", "1"] },
+                "then": { $round: [{ $divide: [{ $subtract: ["$$NOW", "$expirationDate"] }, 1000 * 60 * 60 * 24] }] }
+              }, {
+                "case": { "$eq": ["$status", "2"] },
+                "then": { $round: [{ $divide: [{ $subtract: ["$$NOW", { $last: "$extend.toDate" }] }, 1000 * 60 * 60 * 24] }] }
+              }
+            ],
+            "default": "none"
+          }
+        }
+      },
+    },
+    {
+      "$match": {
+        "daysRemainExpired": { "$gte": -30 }
+      }
+    },
+    {
+      "$project": {
+        "am": 1,
+        "comTaxCode": 1,
+        "comName": 1,
+        "status": 1,
+        "daysRemainExpired": 1,
+        "dayExpired": 1
+      }
+    }
+  ], (error, data) => {
+    if (error) {
+
+      return next(error);
+    } else {
+      res.status(200).json(data)
+    }
+  })
+})
+
 
 module.exports = webhostingRoute;
