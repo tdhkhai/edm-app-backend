@@ -685,58 +685,70 @@ invoiceRoute.route('/count-customers-bar-chart').get((req, res, next) => {
   })
 })
 
-// Doanh thu hàng tháng
-invoiceRoute.route('/monthly-revenue').post((req, res, next) => {
+// Doanh thu hàng tháng - Unit
+invoiceRoute.route('/income-by-month').post((req, res, next) => {
   Invoice.aggregate([
     {
       $facet: {
-        "new": [
-          {
-            "$group": {
-              "_id": {
-                "year": { "$dateToString": { "date": "$monthAction", "format": "%Y" } },
-                "month": { "$dateToString": { "date": "$monthAction", "format": "%Y-%m" } },
-                "typeOfIncome": req.body.typeOfIncomeNew
-              },
-              "sum": {
-                "$sum": "$income"
-              }
+        "newIncome": [{
+          "$addFields": {
+            "year": { "$dateToString": { "date": "$incomeDate", "format": "%Y" } },
+            "month": { "$dateToString": { "date": "$incomeDate", "format": "%m" } },
+          },
+        },
+        {
+          "$match": {
+            "year": req.body.year,
+            "month": req.body.month,
+            "typeOfIncome": "Mới"
+          }
+        },
+        {
+          "$group": {
+            "_id": {
+              "unitCode": "$am.unitCode"
             },
-          },
-          {
-            "$match": {
-              "_id.year": req.body.year
-            }
-          },
-
-        ],
-        "ext": [
-          {
-            "$group": {
-              "_id": {
-                "year": { "$dateToString": { "date": "$monthAction", "format": "%Y" } },
-                "month": { "$dateToString": { "date": "$monthAction", "format": "%Y-%m" } },
-                "typeOfIncome": req.body.typeOfIncomeExt
-              },
-              "sum": {
-                "$sum": "$income"
-              }
+            "countNewIncome": {
+              "$sum": 1
             },
+            "sumNewIncome": {
+              "$sum": "$income"
+            },
+          }
+        }],
+        "extIncome": [{
+          "$addFields": {
+            "year": { "$dateToString": { "date": "$incomeDate", "format": "%Y" } },
+            "month": { "$dateToString": { "date": "$incomeDate", "format": "%m" } },
           },
-          {
-            "$match": {
-              "_id.year": req.body.year
-            }
-          },
-
-        ]
+        },
+        {
+          "$match": {
+            "year": req.body.year,
+            "month": req.body.month,
+            "typeOfIncome": "GH"
+          }
+        },
+        {
+          "$group": {
+            "_id": {
+              "unitCode": "$am.unitCode"
+            },
+            "sumExtIncome": {
+              "$sum": "$income"
+            },
+            "countExtIncome": {
+              "$sum": 1
+            },
+          }
+        }]
       }
     },
     // Ghep cac mang ket qua
     {
       $project: {
         all: {
-          $concatArrays: ["$new", "$ext"]
+          $concatArrays: ["$newIncome", "$extIncome"]
         }
       }
     },
@@ -747,33 +759,175 @@ invoiceRoute.route('/monthly-revenue').post((req, res, next) => {
     // Gom lai
     {
       $group: {
-        _id: {
-          year: "$all._id.year",
-          month: "$all._id.month",
-          typeOfIncome: "$all._id.typeOfIncome",
+        "_id": {
+          "unitCode": "$all._id.unitCode",
         },
-        sum: {
-          $sum: "$all.sum"
-        }
-      }
+        "newIncome": { "$sum": "$all.sumNewIncome" },
+        "extIncome": { "$sum": "$all.sumExtIncome" },
+        "countNewIncome": { "$sum": "$all.countNewIncome" },
+        "countExtIncome": { "$sum": "$all.countExtIncome" },
+      },
     },
     {
-      $sort: {
-        "_id.month": 1,
-        "_id.typeOfIncome": 1
+      "$sort": {
+        "_id.unitCode": 1
       }
     }
   ], (error, data) => {
     if (error) {
-
       return next(error);
     } else {
-      res.status(200).json({
-        msg: data
-      })
+      res.status(200).json(data)
     }
   })
 })
+
+// Doanh thu hàng tháng - AM
+invoiceRoute.route('/income-by-month-am').post((req, res, next) => {
+  Invoice.aggregate([
+    {
+      $facet: {
+        "newIncome": [{
+          "$addFields": {
+            "year": { "$dateToString": { "date": "$incomeDate", "format": "%Y" } },
+            "month": { "$dateToString": { "date": "$incomeDate", "format": "%m" } },
+          },
+        },
+        {
+          "$match": {
+            "year": req.body.year,
+            "month": req.body.month,
+            "typeOfIncome": "Mới"
+          }
+        },
+        {
+          "$group": {
+            "_id": {
+              "unitCode": "$am.unitCode",
+              "userName": "$am.userName"
+            },
+            "countNewIncome": {
+              "$sum": 1
+            },
+            "sumNewIncome": {
+              "$sum": "$income"
+            },
+          }
+        }],
+        "extIncome": [{
+          "$addFields": {
+            "year": { "$dateToString": { "date": "$incomeDate", "format": "%Y" } },
+            "month": { "$dateToString": { "date": "$incomeDate", "format": "%m" } },
+          },
+        },
+        {
+          "$match": {
+            "year": req.body.year,
+            "month": req.body.month,
+            "typeOfIncome": "GH"
+          }
+        },
+        {
+          "$group": {
+            "_id": {
+              "unitCode": "$am.unitCode",
+              "userName": "$am.userName"
+            },
+            "sumExtIncome": {
+              "$sum": "$income"
+            },
+            "countExtIncome": {
+              "$sum": 1
+            },
+          }
+        }]
+      }
+    },
+    // Ghep cac mang ket qua
+    {
+      $project: {
+        all: {
+          $concatArrays: ["$newIncome", "$extIncome"]
+        }
+      }
+    },
+    // Tach thanh tung document
+    {
+      $unwind: "$all"
+    },
+    // Gom lai
+    {
+      $group: {
+        "_id": {
+          "unitCode": "$all._id.unitCode",
+          "userName": "$all._id.userName",
+        },
+        "newIncome": { "$sum": "$all.sumNewIncome" },
+        "extIncome": { "$sum": "$all.sumExtIncome" },
+        "countNewIncome": { "$sum": "$all.countNewIncome" },
+        "countExtIncome": { "$sum": "$all.countExtIncome" },
+      },
+    },
+    {
+      "$sort": {
+        "_id.unitCode": 1
+      }
+    }
+  ], (error, data) => {
+    if (error) {
+      return next(error);
+    } else {
+      res.status(200).json(data)
+    }
+  })
+})
+
+// Doanh thu hàng tháng
+invoiceRoute.route('/income-by-year').post((req, res, next) => {
+  Invoice.aggregate([
+    {
+      "$addFields": {
+        "year": { "$dateToString": { "date": "$incomeDate", "format": "%Y" } },
+      }
+    },
+    {
+      "$match": {
+        "year": req.body.year
+      }
+    },
+    {
+      "$group": {
+        "_id": {
+          "unitCode": "$am.unitCode",
+          "month": { "$dateToString": { "date": "$incomeDate", "format": "%m" } }
+        },
+        "sumIncome": {
+          "$sum": "$income"
+        }
+      }
+    },
+    {
+      "$group": {
+        "_id": {
+          "unitCode": "$_id.unitCode"
+        },
+
+        "income": { "$push": { month: "$_id.month", sum: "$sumIncome" } }
+      }
+    },
+    {
+      "$sort": { "_id.unitCode": 1 }
+    }
+
+  ], (error, data) => {
+    if (error) {
+      return next(error);
+    } else {
+      res.status(200).json(data)
+    }
+  })
+})
+
 
 // List Invoice by Status
 invoiceRoute.route('/list-invoice-by-status').post((req, res, next) => {
