@@ -691,15 +691,8 @@ invoiceRoute.route('/income-by-month').post((req, res, next) => {
     {
       $facet: {
         "newIncome": [{
-          "$addFields": {
-            "year": { "$dateToString": { "date": "$incomeDate", "format": "%Y" } },
-            "month": { "$dateToString": { "date": "$incomeDate", "format": "%m" } },
-          },
-        },
-        {
           "$match": {
-            "year": req.body.year,
-            "month": req.body.month,
+            "incomeDate" : new Date(req.body.dateIncome),
             "typeOfIncome": "Mới"
           }
         },
@@ -715,17 +708,12 @@ invoiceRoute.route('/income-by-month').post((req, res, next) => {
               "$sum": "$income"
             },
           }
-        }],
-        "extIncome": [{
-          "$addFields": {
-            "year": { "$dateToString": { "date": "$incomeDate", "format": "%Y" } },
-            "month": { "$dateToString": { "date": "$incomeDate", "format": "%m" } },
-          },
-        },
+        }
+        ],
+        "extIncome": [
         {
           "$match": {
-            "year": req.body.year,
-            "month": req.body.month,
+            "incomeDate" : new Date(req.body.dateIncome),
             "typeOfIncome": "GH"
           }
         },
@@ -741,24 +729,25 @@ invoiceRoute.route('/income-by-month').post((req, res, next) => {
               "$sum": 1
             },
           }
-        }]
+        }
+        ]
       }
     },
     // Ghep cac mang ket qua
     {
-      $project: {
-        all: {
-          $concatArrays: ["$newIncome", "$extIncome"]
+      "$project": {
+        "all": {
+          "$concatArrays": ["$newIncome", "$extIncome"]
         }
       }
     },
     // Tach thanh tung document
     {
-      $unwind: "$all"
+      "$unwind": "$all"
     },
     // Gom lai
     {
-      $group: {
+      "$group": {
         "_id": {
           "unitCode": "$all._id.unitCode",
         },
@@ -787,16 +776,10 @@ invoiceRoute.route('/income-by-month-am').post((req, res, next) => {
   Invoice.aggregate([
     {
       $facet: {
-        "newIncome": [{
-          "$addFields": {
-            "year": { "$dateToString": { "date": "$incomeDate", "format": "%Y" } },
-            "month": { "$dateToString": { "date": "$incomeDate", "format": "%m" } },
-          },
-        },
+        "newIncome": [
         {
           "$match": {
-            "year": req.body.year,
-            "month": req.body.month,
+            "incomeDate" : new Date(req.body.dateIncome),
             "typeOfIncome": "Mới"
           }
         },
@@ -814,16 +797,10 @@ invoiceRoute.route('/income-by-month-am').post((req, res, next) => {
             },
           }
         }],
-        "extIncome": [{
-          "$addFields": {
-            "year": { "$dateToString": { "date": "$incomeDate", "format": "%Y" } },
-            "month": { "$dateToString": { "date": "$incomeDate", "format": "%m" } },
-          },
-        },
+        "extIncome": [
         {
           "$match": {
-            "year": req.body.year,
-            "month": req.body.month,
+            "incomeDate" : new Date(req.body.dateIncome),
             "typeOfIncome": "GH"
           }
         },
@@ -882,7 +859,7 @@ invoiceRoute.route('/income-by-month-am').post((req, res, next) => {
   })
 })
 
-// Doanh thu hàng tháng
+// Doanh thu năm
 invoiceRoute.route('/income-by-year').post((req, res, next) => {
   Invoice.aggregate([
     {
@@ -916,8 +893,8 @@ invoiceRoute.route('/income-by-year').post((req, res, next) => {
       }
     },
     {
-      "$sort": { "_id.unitCode": 1 }
-    }
+      "$sort": { "_id.unitCode": 1}
+    },
 
   ], (error, data) => {
     if (error) {
@@ -927,7 +904,6 @@ invoiceRoute.route('/income-by-year').post((req, res, next) => {
     }
   })
 })
-
 
 // List Invoice by Status
 invoiceRoute.route('/list-invoice-by-status').post((req, res, next) => {
