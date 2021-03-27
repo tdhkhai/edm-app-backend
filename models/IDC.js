@@ -29,7 +29,7 @@ let IDC = new Schema({
     incomeDate: Date,
     income: Number,
     bundle: String,
-    extend: {
+    extend: [{
         _id: String,
         numberOfExtend: String,
         fromDate: Date,
@@ -37,7 +37,7 @@ let IDC = new Schema({
         incomeDate: Date,
         income: Number,
         remark: String
-    },
+    }],
     cancelDate: {
         type: Date
     },

@@ -28,6 +28,7 @@ const dausoRoute = require('./routes/dauso.route')
 const idcRoute = require('./routes/idc.route')
 const domainRoute = require('./routes/domain.route')
 const webhostingRoute = require('./routes/webhosting.route')
+const xinxeRoute = require('./routes/xinxe.route');
 
 const app = express();
 app.use(bodyParser.json());
@@ -54,6 +55,7 @@ app.use('/api/dau-so/', dausoRoute)
 app.use('/api/idc/', idcRoute)
 app.use('/api/domain/', domainRoute)
 app.use('/api/webhosting/', webhostingRoute)
+app.use('/api/xin-xe/', xinxeRoute)
 
 // Create port
 const port = process.env.PORT || 4000;

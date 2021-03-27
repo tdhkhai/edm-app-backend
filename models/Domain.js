@@ -27,7 +27,7 @@ let Domain = new Schema({
     incomeDate: Date,
     income: Number,
     domain: String,
-    extend: {
+    extend: [{
         _id: String,
         numberOfExtend: String,
         fromDate: Date,
@@ -35,7 +35,7 @@ let Domain = new Schema({
         incomeDate: Date,
         income: Number,
         remark: String
-    },
+    }],
     cancelDate: {
         type: Date
     },

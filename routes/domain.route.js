@@ -115,7 +115,6 @@ domainRoute.route('/updatestatus/:id').put((req, res, next) => {
   })
 })
 
-
 // Delete Invoice
 domainRoute.route('/delete/:id').delete((req, res, next) => {
   Domain.findByIdAndRemove(req.params.id, (error, data) => {
@@ -128,8 +127,6 @@ domainRoute.route('/delete/:id').delete((req, res, next) => {
     }
   })
 })
-
-
 
 // Count cusomer
 domainRoute.route('/count-customers').get((req, res, next) => {
