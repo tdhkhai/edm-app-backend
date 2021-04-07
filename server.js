@@ -7,7 +7,7 @@ let express = require('express'),
    createError = require('http-errors');
 // Connecting with mongo db
 mongoose.Promise = global.Promise;
-mongoose.connect(dbConfig.db_real, {
+mongoose.connect(dbConfig.db, {
    useNewUrlParser: true,
    useFindAndModify: false,
 }).then(() => {
@@ -29,6 +29,7 @@ const idcRoute = require('./routes/idc.route')
 const domainRoute = require('./routes/domain.route')
 const webhostingRoute = require('./routes/webhosting.route')
 const xinxeRoute = require('./routes/xinxe.route');
+const schoolRoute = require('./routes/school.route');
 
 const app = express();
 app.use(bodyParser.json());
@@ -56,6 +57,7 @@ app.use('/api/idc/', idcRoute)
 app.use('/api/domain/', domainRoute)
 app.use('/api/webhosting/', webhostingRoute)
 app.use('/api/xin-xe/', xinxeRoute)
+app.use('/api/edu-ecosystems/', schoolRoute)
 
 // Create port
 const port = process.env.PORT || 4000;
