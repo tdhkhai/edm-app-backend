@@ -64,7 +64,7 @@ domainRoute.route('/update/:id').put((req, res, next) => {
   })
 })
 
-// Push Extend Domain
+// Push Extend IDC
 domainRoute.route('/pushextenddomain/:id').put((req, res, next) => {
   Domain.findByIdAndUpdate(
     req.params.id, {
@@ -283,6 +283,5 @@ domainRoute.route('/list-expired').get((req, res, next) => {
     }
   })
 })
-
 
 module.exports = domainRoute;

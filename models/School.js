@@ -5,6 +5,8 @@ const Schema = mongoose.Schema;
 let School = new Schema({
   id: { type: String },
   idvnedu: { type: String },
+  id_vnedu: { type: String },
+  id_moet: { type: String },
   unit: {
     _id: { type: String },
     unitCode: { type: String },
