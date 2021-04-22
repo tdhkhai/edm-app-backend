@@ -131,7 +131,6 @@ invoiceRoute.route('/sumary-theo-thang-am').post((req, res, next) => {
     // Tìm các khách hàng tạo theo tháng
     {
       $match: {
-
         incomeDate: new Date(req.body.month),
         typeOfIncome: req.body.toi
       }

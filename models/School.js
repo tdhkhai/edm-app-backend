@@ -31,6 +31,7 @@ let School = new Schema({
       status: { type: Boolean },
       createdAt: { type: Date }
     },
+    status: { type: String },
     remark: { type: String },
   },
   remark: { type: String }
