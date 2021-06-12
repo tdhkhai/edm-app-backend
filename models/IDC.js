@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-
+const User = mongoose.model('User');
 // Define collection and schema
 let IDC = new Schema({
     id: {
@@ -16,6 +16,7 @@ let IDC = new Schema({
         unitCode: String,
         userName: String,
     },
+    am: { type: User.schema },
     comTaxCode: {
         type: String
     },
@@ -36,7 +37,8 @@ let IDC = new Schema({
         toDate: Date,
         incomeDate: Date,
         income: Number,
-        remark: String
+        remark: String,
+        am: { type: User.schema },
     }],
     cancelDate: {
         type: Date

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-
+const User = mongoose.model('User');
 // Define collection and schema
 let Domain = new Schema({
     id: {
@@ -8,12 +8,13 @@ let Domain = new Schema({
     },
     status: String,
     loaiDomain: String,
-    am: {
-        _id: String,
-        userCode: String,
-        unitCode: String,
-        userName: String,
-    },
+    // am: {
+    //     _id: String,
+    //     userCode: String,
+    //     unitCode: String,
+    //     userName: String,
+    // },
+    am: { type: User.schema },
     comTaxCode: {
         type: String
     },
@@ -34,7 +35,9 @@ let Domain = new Schema({
         toDate: Date,
         incomeDate: Date,
         income: Number,
-        remark: String
+        remark: String,
+        am: { type: User.schema },
+        
     }],
     cancelDate: {
         type: Date

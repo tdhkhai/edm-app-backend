@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-
+const User = mongoose.model('User');
 // Define collection and schema
 let Dauso = new Schema({
     id: {
@@ -13,12 +13,7 @@ let Dauso = new Schema({
         type: String
     },
     status: String,
-    am: {
-        _id: String,
-        userCode: String,
-        unitCode: String,
-        userName: String,
-    },
+    am: { type: User.schema },
     comTaxCode: {
         type: String
     },
