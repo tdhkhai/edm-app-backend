@@ -308,7 +308,7 @@ idcRoute.route('/list-expired').get((req, res, next) => {
             "branches": [
               {
                 "case": { "$eq": ["$status", "1"] },
-                "then": { "$dateToString": { "date": "$registrationDate" } },
+                "then": { "$dateToString": { "date": "$expirationDate" } },
               }, {
                 "case": { "$eq": ["$status", "2"] },
                 "then": { "$dateToString": { "date": { $last: "$extend.toDate" } } },
