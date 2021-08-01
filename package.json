@@ -21,6 +21,6 @@
     "primeng": "^11.1.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.7"
+    "nodemon": "^2.0.12"
   }
 }

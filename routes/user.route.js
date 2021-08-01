@@ -38,6 +38,17 @@ userRoute.route('/activatedusers').get((req, res) => {
   })
 })
 
+// Get User by UserName
+userRoute.route('/getuserbyusername').post((req, res) => {
+  User.find({ userName: req.body.userName }, (error, data) => {
+    if (error) {
+      return next(error);
+    } else {
+      res.json(data);
+    }
+  });
+});
+
 // Get Users for Select
 userRoute.route('/userselect').get((req, res) => {
   User.aggregate([

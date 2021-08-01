@@ -6,35 +6,23 @@ const Unit = mongoose.model('Unit');
 let School = new Schema(
   {
     id: { type: String },
-    idvnedu: { type: String },
     id_vnedu: { type: String },
     id_moet: { type: String },
-    // unit: {
-    //   _id: { type: String },
-    //   unitCode: { type: String },
-    //   unitName: { type: String },
-    //   status: { type: Boolean },
-    //   createdAt: { type: Date }
-    // },
+    typeOfSchool: { type: String },
     unit: { type: Unit.schema },
     schoolName: { type: String },
     schoolTaxCode: { type: String },
     caphoc: { type: String },
     status: { type: String },
     modules: {
+      loaiHD_SLL: { type: String },
       moduleName: { type: String },
       schoolYear: { type: String },
       amountSLL: { type: Number },
       income: { type: Number },
+      incomeDate: { type: Date },
       fromDate_toDate: { type: Object },
-      // am: {
-      //   _id: { type: String },
-      //   userCode: { type: String },
-      //   unitCode: { type: String },
-      //   userName: { type: String },
-      //   status: { type: Boolean },
-      //   createdAt: { type: Date }
-      // },
+      thoihanhopdong: { type: String },
       am: { type: User.schema },
       status: { type: String },
       remark: { type: String },

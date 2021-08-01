@@ -9,61 +9,75 @@ let Unit = require('../models/Unit');
 unitRoute.route('/create').post((req, res, next) => {
   Unit.create(req.body, (error, data) => {
     if (error) {
-      return next(error)
+      return next(error);
     } else {
-      res.json(data)
+      res.json(data);
     }
-  })
+  });
 });
 
 // Get All Employees
 unitRoute.route('/').get((req, res) => {
   Unit.find((error, data) => {
     if (error) {
-      return next(error)
+      return next(error);
     } else {
-      res.json(data)
+      res.json(data);
     }
-  })
-})
+  });
+});
 
 // Get All Employees Activated
 unitRoute.route('/activatedunit').get((req, res) => {
-  Unit.find({status: 1},(error, data) => {
+  Unit.find({ status: 1 }, (error, data) => {
     if (error) {
-      return next(error)
+      return next(error);
     } else {
-      res.json(data)
+      res.json(data);
     }
-  })
-})
+  });
+});
 
 // Get single employee
 unitRoute.route('/read/:id').get((req, res) => {
   Unit.findById(req.params.id, (error, data) => {
     if (error) {
-      return next(error)
+      return next(error);
     } else {
-      res.json(data)
+      res.json(data);
     }
-  })
-})
+  });
+});
 
+// Get Unit by UnitCode
+unitRoute.route('/getUnitbyUnitCode').post((req, res) => {
+  Unit.find({ unitCode: req.body.unitCode }, (error, data) => {
+    if (error) {
+      return next(error);
+    } else {
+      res.json(data);
+    }
+  });
+});
 
 // Update employee
 unitRoute.route('/update/:id').put((req, res, next) => {
-  Unit.findByIdAndUpdate(req.params.id, {
-    $set: req.body
-  }, (error, data) => {
-    if (error) {
-      return next(error);
-      console.log(error)
-    } else {
-      res.json(data)
-      console.log('Data updated successfully')
+  Unit.findByIdAndUpdate(
+    req.params.id,
+    {
+      $set: req.body,
+    },
+    (error, data) => {
+      if (error) {
+        return next(error);
+        console.log(error);
+      } else {
+        res.json(data);
+        console.log('Data updated successfully');
+      }
     }
-  })
-})
+  );
+});
 
 // Delete employee
 unitRoute.route('/delete/:id').delete((req, res, next) => {
@@ -72,10 +86,10 @@ unitRoute.route('/delete/:id').delete((req, res, next) => {
       return next(error);
     } else {
       res.status(200).json({
-        msg: data
-      })
+        msg: data,
+      });
     }
-  })
-})
+  });
+});
 
 module.exports = unitRoute;
