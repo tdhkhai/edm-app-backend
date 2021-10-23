@@ -347,4 +347,72 @@ domainRoute.route('/list-expired').get((req, res, next) => {
   );
 });
 
+// List Expired by Month
+domainRoute.route('/list-expired-by-month').post((req, res, next) => {
+  Domain.aggregate(
+    [
+      {
+        $addFields: {
+          year: {
+            $switch: {
+              branches: [
+                {
+                  case: { $eq: ['$status', '1'] },
+                  then: {
+                    $dateToString: { date: '$registrationDate', format: '%Y' },
+                  },
+                },
+                {
+                  case: { $eq: ['$status', '2'] },
+                  then: {
+                    $dateToString: {
+                      date: { $last: '$extend.fromDate' },
+                      format: '%Y',
+                    },
+                  },
+                },
+              ],
+              default: 'none',
+            },
+          },
+          monthExpired: {
+            $switch: {
+              branches: [
+                {
+                  case: { $eq: ['$status', '1'] },
+                  then: {
+                    $dateToString: { date: '$expirationDate', format: '%m' },
+                  },
+                },
+                {
+                  case: { $eq: ['$status', '2'] },
+                  then: {
+                    $dateToString: {
+                      date: { $last: '$extend.toDate', format: '%m' },
+                    },
+                  },
+                },
+              ],
+              default: 'none',
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          monthExpired: req.body.month,
+          year: req.body.year,
+        },
+      },
+    ],
+    (error, data) => {
+      if (error) {
+        return next(error);
+      } else {
+        res.status(200).json(data);
+      }
+    }
+  );
+});
+
 module.exports = domainRoute;
