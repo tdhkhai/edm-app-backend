@@ -8,7 +8,7 @@ createError = require('http-errors');
 // Connecting with mongo db
 mongoose.Promise = global.Promise;
 mongoose
-  .connect(dbConfig.db, {
+  .connect(dbConfig.db_real, {
     useNewUrlParser: true,
     useFindAndModify: false,
   })
